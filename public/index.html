@@ -67,6 +67,70 @@
             transform: translateY(-1px);
         }
 
+        /* Auth button styles */
+        .auth-btn {
+            background: #2a2a3e;
+            border: none;
+            color: #e0e0e0 !important;
+            -webkit-text-fill-color: #e0e0e0 !important;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-height: 36px;
+        }
+
+        .auth-btn:hover {
+            background: #3a3a4e;
+            transform: translateY(-1px);
+        }
+
+        .auth-btn.login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+        }
+
+        .auth-btn.login:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #2a2a3e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #e0e0e0;
+            min-height: 36px;
+        }
+
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #667eea;
+        }
+
+        .user-name {
+            font-weight: 500;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .auth-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .sidebar-toggle {
             position: fixed;
             top: 80px;
@@ -988,13 +1052,26 @@
                 align-items: stretch;
             }
 
+            .auth-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .user-profile {
+                justify-content: center;
+            }
+
+            .user-name {
+                max-width: 100px;
+            }
+
             .header h1 {
                 flex-direction: column;
                 text-align: center;
                 gap: 15px;
             }
 
-            .theme-toggle, .fullscreen-btn {
+            .theme-toggle, .fullscreen-btn, .auth-btn {
                 font-size: 12px;
                 padding: 6px 10px;
             }
@@ -1067,6 +1144,14 @@
         <h1>
             <div class="header-controls">
                 <span id="userStatus" class="status-indicator status-free">FREE</span>
+                <div class="auth-container">
+                    <div id="userProfile" class="user-profile" style="display: none;">
+                        <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+                        <span id="userName" class="user-name"></span>
+                    </div>
+                    <button id="loginBtn" class="auth-btn login" onclick="handleLogin()">🔐 Login</button>
+                    <button id="logoutBtn" class="auth-btn" onclick="handleLogout()" style="display: none;">🚪 Logout</button>
+                </div>
                 <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
                 <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
                 <button class="upgrade-button" onclick="openUpgradeModal()">
@@ -1583,6 +1668,162 @@
             ]
         };
 
+        // OAuth Configuration (you can customize these for your OAuth provider)
+        const OAUTH_CONFIG = {
+            // Example for Google OAuth - replace with your actual provider
+            clientId: 'your-client-id',
+            redirectUri: window.location.origin,
+            scope: 'openid profile email',
+            authUrl: 'https://accounts.google.com/oauth/authorize',
+            // You can also use GitHub, Microsoft, etc.
+        };
+
+        // User authentication state
+        let currentUser = null;
+
+        // OAuth Functions
+        function handleLogin() {
+            // For demo purposes, we'll simulate OAuth login
+            // In a real implementation, you would redirect to your OAuth provider
+            
+            // Example OAuth URL construction
+            const params = new URLSearchParams({
+                client_id: OAUTH_CONFIG.clientId,
+                redirect_uri: OAUTH_CONFIG.redirectUri,
+                scope: OAUTH_CONFIG.scope,
+                response_type: 'code',
+                state: generateRandomState()
+            });
+            
+            // For demo purposes, we'll simulate a successful login
+            // In production, uncomment the line below to redirect to OAuth provider
+            // window.location.href = `${OAUTH_CONFIG.authUrl}?${params.toString()}`;
+            
+            // Simulate login for demo
+            simulateLogin();
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('user_data');
+            updateAuthUI();
+            showNotification('Logged out successfully', 'success');
+        }
+
+        function checkAuthStatus() {
+            // Check if user data exists in localStorage
+            const userData = localStorage.getItem('user_data');
+            if (userData) {
+                try {
+                    currentUser = JSON.parse(userData);
+                    updateAuthUI();
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                    localStorage.removeItem('user_data');
+                }
+            }
+
+            // Check for OAuth callback in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            
+            if (code && state) {
+                // Handle OAuth callback
+                handleOAuthCallback(code, state);
+            }
+        }
+
+        function handleOAuthCallback(code, state) {
+            // In a real implementation, you would exchange the code for an access token
+            // This is typically done on your backend server for security
+            
+            // For demo purposes, we'll simulate a successful authentication
+            console.log('OAuth callback received:', { code, state });
+            
+            // Clean up URL
+            const url = new URL(window.location);
+            url.searchParams.delete('code');
+            url.searchParams.delete('state');
+            window.history.replaceState({}, document.title, url.pathname);
+            
+            // Simulate successful login
+            simulateLogin();
+        }
+
+        function simulateLogin() {
+            // This simulates a successful OAuth login
+            // In production, this data would come from your OAuth provider
+            const mockUser = {
+                id: 'demo-user-123',
+                name: 'Demo User',
+                email: 'demo@example.com',
+                avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=667eea&color=fff&size=48',
+                provider: 'demo'
+            };
+            
+            currentUser = mockUser;
+            localStorage.setItem('user_data', JSON.stringify(mockUser));
+            updateAuthUI();
+            showNotification('Logged in successfully!', 'success');
+        }
+
+        function updateAuthUI() {
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userProfile = document.getElementById('userProfile');
+            const userName = document.getElementById('userName');
+            const userAvatar = document.getElementById('userAvatar');
+            
+            if (currentUser) {
+                // User is logged in
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                userProfile.style.display = 'flex';
+                
+                userName.textContent = currentUser.name;
+                userAvatar.src = currentUser.avatar;
+                userAvatar.alt = `${currentUser.name}'s avatar`;
+            } else {
+                // User is not logged in
+                loginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                userProfile.style.display = 'none';
+            }
+        }
+
+        function generateRandomState() {
+            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        }
+
+        function showNotification(message, type = 'info') {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+                color: white;
+                border-radius: 4px;
+                z-index: 10000;
+                font-size: 14px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                transition: all 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
         // Initialize app
         function initializeApp() {
             updateModelDropdown();
@@ -1592,6 +1833,7 @@
             loadChatHistory();
             updateWordCount();
             updateStatusDisplay(); // Initialize PRO2 status display
+            checkAuthStatus(); // Initialize authentication status
             
             // Auto-save every 30 seconds
             setInterval(() => {
