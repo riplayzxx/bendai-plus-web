@@ -64,9 +64,33 @@ export default async function handler(req, res) {
             { expiresIn: '7d' }
         );
 
-        // Set cookie and redirect
-        res.setHeader('Set-Cookie', `auth-token=${jwtToken}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict${process.env.VERCEL_URL ? '; Secure' : ''}`);
-        res.redirect('/?auth=success');
+        // Create a response HTML that sets localStorage and redirects
+        const responseHTML = `
+            <html>
+                <head>
+                    <title>Login Successful</title>
+                </head>
+                <body>
+                    <script>
+                        // Store user data in localStorage
+                        localStorage.setItem('userData', JSON.stringify({
+                            id: '${userData.id}',
+                            email: '${userData.email}',
+                            name: '${userData.name}',
+                            picture: '${userData.picture}',
+                            token: '${jwtToken}'
+                        }));
+                        
+                        // Redirect to main page
+                        window.location.href = '/?auth=success';
+                    </script>
+                    <p>Login successful! Redirecting...</p>
+                </body>
+            </html>
+        `;
+        
+        res.setHeader('Content-Type', 'text/html');
+        res.send(responseHTML);
     } catch (error) {
         console.error('OAuth error:', error);
         res.status(500).json({ error: 'Internal server error' });
