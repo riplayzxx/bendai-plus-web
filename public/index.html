@@ -2024,7 +2024,11 @@
                 if (userProfile) userProfile.style.display = 'flex';
                 
                 // Update user info
-                if (userName) userName.textContent = currentUser.name;
+                if (userName) {
+                    // Extract username from email (part before @)
+                    const emailUsername = currentUser.email ? currentUser.email.split('@')[0] : currentUser.name;
+                    userName.textContent = emailUsername;
+                }
                 if (userAvatar) {
                     userAvatar.src = currentUser.avatar;
                     userAvatar.alt = `${currentUser.name}'s avatar`;
