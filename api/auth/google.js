@@ -2,7 +2,7 @@ import { sign } from 'jsonwebtoken';
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REDIRECT_URI = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api/auth/google` : 'https://bendai-plus-web.vercel.app/api/auth/google';
+const REDIRECT_URI = 'https://bendai-plus-web.vercel.app/api/auth/google';
 
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
