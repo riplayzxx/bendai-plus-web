@@ -1887,14 +1887,14 @@
 
         function handleLogout() {
             currentUser = null;
-            localStorage.removeItem('user_data');
+            localStorage.removeItem('userData');
             updateAuthUI();
             showNotification('Logged out successfully', 'success');
         }
 
         function checkAuthStatus() {
             // Check if user data exists in localStorage
-            const userData = localStorage.getItem('user_data');
+            const userData = localStorage.getItem('userData');
             if (userData) {
                 try {
                     currentUser = JSON.parse(userData);
@@ -1904,12 +1904,12 @@
                         return;
                     } else {
                         // Invalid user data, clear it
-                        localStorage.removeItem('user_data');
+                        localStorage.removeItem('userData');
                         currentUser = null;
                     }
                 } catch (error) {
                     console.error('Error parsing user data:', error);
-                    localStorage.removeItem('user_data');
+                    localStorage.removeItem('userData');
                     currentUser = null;
                 }
             }
@@ -1918,8 +1918,12 @@
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             const state = urlParams.get('state');
+            const authSuccess = urlParams.get('auth');
             
-            if (code && state) {
+            if (authSuccess === 'success') {
+                // Handle successful authentication callback
+                handleOAuthCallback(null, null, true);
+            } else if (code && state) {
                 // Handle OAuth callback
                 handleOAuthCallback(code, state);
             } else {
@@ -1938,10 +1942,48 @@
             return true;
         }
 
-        function handleOAuthCallback(code, state) {
-            // In a real implementation, you would exchange the code for an access token
-            // This should be done on your backend server for security
+        function handleOAuthCallback(code, state, authSuccess = false) {
+            if (authSuccess) {
+                // Handle ?auth=success parameter
+                console.log('Authentication success callback received');
+                
+                // Clean up URL
+                const url = new URL(window.location);
+                url.searchParams.delete('auth');
+                window.history.replaceState({}, document.title, url.pathname);
+                
+                // Validate user data from localStorage
+                const userData = localStorage.getItem('userData');
+                if (userData) {
+                    try {
+                        const user = JSON.parse(userData);
+                        // Validate that the user data is complete
+                        if (user && user.id && user.name) {
+                            currentUser = user;
+                            updateAuthUI();
+                            showNotification('Successfully authenticated!', 'success');
+                            return;
+                        } else {
+                            // Invalid user data
+                            localStorage.removeItem('userData');
+                            showNotification('Invalid user data. Please login again.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error parsing user data:', error);
+                        localStorage.removeItem('userData');
+                        showNotification('Error validating user data. Please login again.', 'error');
+                    }
+                } else {
+                    showNotification('No user data found. Please login again.', 'error');
+                }
+                
+                // If we get here, authentication failed - show login splash
+                currentUser = null;
+                updateAuthUI();
+                return;
+            }
             
+            // Handle regular OAuth callback with code and state
             console.log('OAuth callback received:', { code, state });
             
             // Clean up URL
