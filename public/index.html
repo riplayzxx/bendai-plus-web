@@ -1066,7 +1066,10 @@
             line-height: var(--leading-relaxed);
             letter-spacing: -0.005em;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
+            overflow: visible;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .user-message::before {
@@ -1120,7 +1123,10 @@
             letter-spacing: -0.005em;
             color: var(--text-primary);
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
+            overflow: visible;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .ai-message::before {
@@ -3041,6 +3047,43 @@
             border-radius: var(--space-1);
             font-family: var(--font-mono);
             font-size: 0.9em;
+        }
+
+        /* Enhanced message overflow handling for very long content */
+        .user-message,
+        .ai-message {
+            /* Allow for very tall messages, but add scroll for extremely long ones */
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .user-message::-webkit-scrollbar,
+        .ai-message::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .user-message::-webkit-scrollbar-track,
+        .ai-message::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .user-message::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        .ai-message::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.4);
+            border-radius: 2px;
+        }
+
+        .user-message::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .ai-message::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.6);
         }
 
         /* Micro-interaction enhancements */
